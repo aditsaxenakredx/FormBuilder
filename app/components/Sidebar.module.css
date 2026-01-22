@@ -1,0 +1,222 @@
+.sidebarHeader {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logoPlaceholder {
+    background: linear-gradient(135deg, var(--bg-app) 0%, var(--bg-paper) 100%);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    font-weight: 700;
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+}
+
+.section {
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s;
+}
+
+.sectionHeader:hover {
+    background-color: var(--bg-app);
+}
+
+.sectionTitleInput {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+}
+
+.sectionTitleInput:focus {
+    color: var(--accent);
+}
+
+.fieldCard {
+    background-color: var(--bg-paper);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.fieldCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-hover);
+}
+
+.fieldCard:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg-sidebar), 0 0 0 4px var(--accent);
+}
+
+.dragHandle {
+    color: var(--text-muted);
+    cursor: grab;
+    padding-top: 0.25rem;
+    transition: color 0.2s;
+}
+
+.fieldCard:hover .dragHandle {
+    color: var(--text-secondary);
+}
+
+.cardContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.inputWrapper {
+    position: relative;
+}
+
+.inputLabel {
+    width: 100%;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    padding: 0.25rem 0;
+    transition: color 0.2s;
+}
+
+.inputLabel::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.prefillContainer {
+    background-color: var(--bg-app);
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    display: flex;
+    position: relative;
+    margin-left: 0.5rem;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.prefillContainer:focus-within {
+    background-color: var(--bg-paper);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.prefillContainer::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: -0.8rem;
+    width: 0.75rem;
+    height: 1.8rem;
+    border-left: 2px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    border-bottom-left-radius: 8px;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.inputValue {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    /* Make data look like data */
+    font-size: 0.85rem;
+}
+
+.inputValue::placeholder {
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+}
+
+.cardActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.2s;
+}
+
+.fieldCard:hover .cardActions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.actionButton {
+    padding: 0.4rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+}
+
+.actionButton.delete:hover {
+    background-color: #fee2e2;
+    color: var(--danger);
+}
+
+.addButton {
+    width: 100%;
+    background-color: transparent;
+    border: 1px dashed var(--border-color);
+    padding: 0.875rem;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.addButton:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background-color: rgba(99, 102, 241, 0.04);
+}
