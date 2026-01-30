@@ -36,6 +36,9 @@ const TEMPLATES = [
     },
 ];
 
+// Force dynamic rendering (required for protected routes)
+export const dynamic = 'force-dynamic';
+
 export default function DashboardPage() {
     const { user, loading, signOut } = useAuth();
     const router = useRouter();
