@@ -70,7 +70,7 @@ export const PublishButton: React.FC<PublishButtonProps> = ({ pages, headerConfi
             }
 
             if (data) {
-                const url = `${window.location.origin} /share/${data.id} `;
+                const url = `${window.location.origin}/share/${data.id}`;
                 setShareUrl(url);
             }
         } catch (error: any) {
@@ -84,7 +84,7 @@ export const PublishButton: React.FC<PublishButtonProps> = ({ pages, headerConfi
             } else if (error?.code === '42501') {
                 errorMessage += 'Permission denied. Please enable Row Level Security policies in your Supabase dashboard.';
             } else if (error?.message) {
-                errorMessage += `Error: ${error.message} `;
+                errorMessage += `Error: ${error.message}`;
             } else {
                 errorMessage += 'Please check your connection and try again.';
             }

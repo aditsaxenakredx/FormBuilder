@@ -27,6 +27,7 @@ export interface HeaderConfig {
   subHeader: string[]; // Array for multi-line support
   companyName: string;
   formTitle: string;
+  formName?: string;  // Name used in editor/dashboard (file name)
   disclaimer: string;
   applicationDate?: string; // Optional editable field
   applicationNumber?: string; // Optional editable field

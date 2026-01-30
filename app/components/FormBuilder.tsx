@@ -4,12 +4,19 @@ import { Preview } from './Preview';
 import styles from './FormBuilder.module.css';
 import { Page, Section, FormField, HeaderConfig, FieldType } from './types';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, Download, Undo, Redo } from 'lucide-react';
+import { Printer, Undo, Redo } from 'lucide-react';
 import { PublishButton } from './PublishButton';
+import { SaveButton } from './SaveButton';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useHistory } from '../hooks/useHistory';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '../../lib/supabaseClient';
 
 export function FormBuilder() {
+    const searchParams = useSearchParams();
+    const [formId, setFormId] = useState<string | null>(searchParams?.get('id') || null);
+    const [isLoadingForm, setIsLoadingForm] = useState(!!formId);
+
     const {
         pages,
         headerConfig,
@@ -122,6 +129,49 @@ export function FormBuilder() {
         const newHeader = typeof value === 'function' ? value(headerConfig) : value;
         pushState(pages, newHeader);
     };
+
+    // Load form from database if formId is in URL
+    useEffect(() => {
+        const loadForm = async () => {
+            if (!formId) {
+                setIsLoadingForm(false);
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('forms')
+                    .select('*')
+                    .eq('id', formId)
+                    .single();
+
+                if (error) throw error;
+
+                if (data && data.structure) {
+                    // Load the saved structure
+                    pushState(
+                        data.structure.pages || pages,
+                        data.structure.headerConfig || headerConfig
+                    );
+                    if (data.background_color) {
+                        setBackgroundColor(data.background_color);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading form:', error);
+                alert('Failed to load form. Starting with a blank form instead.');
+            } finally {
+                setIsLoadingForm(false);
+            }
+        };
+
+        loadForm();
+    }, [formId]);
+
+    const handleFormSaved = (savedFormId: string) => {
+        setFormId(savedFormId);
+    };
+
 
     const componentRef = useRef<HTMLDivElement>(null);
 
@@ -276,6 +326,34 @@ export function FormBuilder() {
 
     const [backgroundColor, setBackgroundColor] = useState('#d1eff1');
 
+    // Show loading state while form is being loaded
+    if (isLoadingForm) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#fff'
+            }}>
+                <div style={{
+                    textAlign: 'center'
+                }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        border: '4px solid #f6f6f6',
+                        borderTopColor: '#1a1a1a',
+                        borderRadius: '50%',
+                        animation: 'spin 0.8s linear infinite',
+                        margin: '0 auto 1rem'
+                    }} />
+                    <p style={{ color: '#606060', fontSize: '0.875rem' }}>Loading form...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
             <aside className={styles.sidebar}>
@@ -304,7 +382,7 @@ export function FormBuilder() {
                         <div className={styles.headerLeft}>
                             <h1 className={styles.headerTitle}>Form Editor</h1>
                             <p className={styles.headerSubtitle}>
-                                {headerConfig.formTitle || 'Untitled Form'}
+                                {headerConfig.formName || 'Untitled Form'}
                             </p>
                         </div>
 
@@ -345,6 +423,14 @@ export function FormBuilder() {
                                 <Printer size={18} />
                                 Export PDF
                             </button>
+
+                            <SaveButton
+                                pages={pages}
+                                headerConfig={headerConfig}
+                                backgroundColor={backgroundColor}
+                                formId={formId || undefined}
+                                onSaved={handleFormSaved}
+                            />
 
                             <PublishButton
                                 pages={pages}

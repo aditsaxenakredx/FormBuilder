@@ -311,6 +311,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
 
     const [headerExpanded, setHeaderExpanded] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -346,9 +347,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
         <div className="w-full pb-20">
             <div className={styles.sidebarHeader}>
-                <div className={styles.logoPlaceholder}>
-                    <div style={{ width: 24, height: 24, background: 'var(--accent)', borderRadius: 6 }}></div>
-                    FintechForm
+                <div
+                    className={styles.logoPlaceholder}
+                    onDoubleClick={() => setIsEditingTitle(true)}
+                    style={{ cursor: isEditingTitle ? 'text' : 'pointer' }}
+                    title="Double-click to rename this form"
+                >
+                    <div style={{ width: 24, height: 24, background: '#1a1a1a', borderRadius: 6 }}></div>
+                    {isEditingTitle ? (
+                        <input
+                            type="text"
+                            value={headerConfig.formName || 'Untitled Form'}
+                            onChange={(e) => onUpdateHeader({ formName: e.target.value })}
+                            onBlur={() => setIsEditingTitle(false)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    setIsEditingTitle(false);
+                                }
+                            }}
+                            autoFocus
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                outline: 'none',
+                                color: 'white',
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                width: '100%',
+                                fontFamily: 'inherit'
+                            }}
+                            placeholder="Enter form name..."
+                        />
+                    ) : (
+                        <span>{headerConfig.formName || 'Untitled Form'}</span>
+                    )}
                 </div>
             </div>
 
@@ -365,7 +397,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {headerExpanded && (
                     <div className="px-4 space-y-3">
                         <div>
-                            <label className="text-[10px] uppercase text-muted font-bold block mb-1">Form Title</label>
+                            <label className="text-[10px] uppercase text-muted font-bold block mb-1">
+                                Form Title (displayed on PDF)
+                            </label>
                             <input
                                 className={styles.inputLabel}
                                 value={headerConfig.formTitle}
