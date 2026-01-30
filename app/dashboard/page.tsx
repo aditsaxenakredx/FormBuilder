@@ -18,7 +18,7 @@ interface Form {
 const TEMPLATES = [
     {
         id: 'loan-application',
-        title: 'Loan Application Form',
+        title: 'Application Form',
         description: 'Standard loan application with personal and financial details',
         icon: '💰',
     },
