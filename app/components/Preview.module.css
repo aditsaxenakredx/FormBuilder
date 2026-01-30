@@ -160,8 +160,8 @@
     font-weight: 600;
     font-size: 1rem;
     color: #000;
-    border: none;
-    /* No border as per image, just white on teal */
+    border: 1px solid #ccc;
+    /* Added border for visibility */
 }
 
 /* Fallback line style (also using white box look) */
@@ -176,7 +176,8 @@
 }
 
 .charBoxInput {
-    border: none;
+    border: 1px solid #ccc;
+    /* Added border for visibility */
     background: white;
     /* Matches charBox */
     width: 1.6rem;
@@ -193,7 +194,8 @@
 }
 
 .inputLineEditable {
-    border: none;
+    border: 1px solid #ccc;
+    /* Added border for visibility */
     background: white;
     /* Matches inputLine style */
     width: 100%;

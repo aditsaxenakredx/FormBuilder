@@ -1,25 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Preview } from './Preview';
 import styles from './FormBuilder.module.css';
 import { Page, Section, FormField, HeaderConfig, FieldType } from './types';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, Download } from 'lucide-react';
+import { Printer, Download, Undo, Redo } from 'lucide-react';
+import { PublishButton } from './PublishButton';
 import { arrayMove } from '@dnd-kit/sortable';
+import { useHistory } from '../hooks/useHistory';
 
 export function FormBuilder() {
-    // Header State (Global)
-    const [headerConfig, setHeaderConfig] = useState<HeaderConfig>({
-        logoText: 'DTX',
-        logoHighlight: 'X',
-        subHeader: ['DOMESTIC', 'TRADE', 'EXCHANGE'],
-        companyName: 'KredX Platform Private Limited',
-        formTitle: 'Application Form',
-        disclaimer: 'All fields are mandatory. If a field is not applicable, please write "NA" — do not leave any fields blank.'
-    });
-
-    const [pages, setPages] = useState<Page[]>([
-        {
+    const {
+        pages,
+        headerConfig,
+        pushState,
+        undo,
+        redo,
+        canUndo,
+        canRedo
+    } = useHistory(
+        // Initial Pages
+        [{
             id: 'page1',
             sections: [
                 {
@@ -91,163 +92,6 @@ export function FormBuilder() {
                     ]
                 },
                 {
-                    id: 'kmp-1',
-                    title: 'Key Managerial Personnel – 1',
-                    fields: [
-                        { id: 'k1-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-dg', label: 'Designation', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k1-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k1-din', label: 'DIN / DPIN', value: '', type: 'text', boxCount: 8 },
-                        { id: 'k1-fan', label: 'Father’s Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k1-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k1-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-dob', label: 'Date of Birth', value: '', type: 'date' },
-                        { id: 'k1-ad', label: 'Address', value: '', type: 'text' },
-                        { id: 'k1-pc', label: 'Pin Code', value: '', type: 'text', boxCount: 6 },
-                        { id: 'k1-cy', label: 'City', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-st', label: 'State', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k1-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'k1-pt', label: 'Personnel Type', value: '', type: 'checkbox', options: ['Senior Management', 'Banker', 'Authorised Signatory', 'Platform User', 'Beneficial Owner'] },
-                        { id: 'k1-pst', label: 'Personnel Sub-type', value: '', type: 'checkbox', options: ['Proprietor', 'Manager', 'Partner', 'Director', 'Other'] },
-                        { id: 'k1-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Checker', 'Viewer', 'Both', 'None'] },
-                        { id: 'k1-am', label: 'Authorisation Method', value: '', type: 'checkbox', options: ['Board Resolution', 'Power of Attorney', 'Letter of Authorisation', 'Other'] },
-                        { id: 'k1-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
-                    id: 'bank-acc-2',
-                    title: 'Bank Account Information (Account 2)',
-                    fields: [
-                        { id: 'b2-an', label: 'Account Number', value: '', type: 'text', boxCount: 16 },
-                        { id: 'b2-bn', label: 'Bank Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'b2-hn', label: 'Account Holder Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'b2-be', label: 'Bank Branch Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'b2-cn', label: 'Contact Person Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'b2-cp', label: 'Contact Person Phone', value: '', type: 'text', boxCount: 10 },
-                        { id: 'b2-cd', label: 'Contact Person Designation', value: '', type: 'text', boxCount: 15 },
-                        { id: 'b2-ifsc', label: 'IFSC', value: '', type: 'text', boxCount: 11 },
-                        { id: 'b2-od', label: 'OD / CC Amount', value: '', type: 'number', helpText: '(if applicable)' },
-                        { id: 'b2-tl', label: 'Term Loan', value: '', type: 'number', helpText: '(if applicable)' },
-                        { id: 'b2-at', label: 'Account Type', value: '', type: 'checkbox', options: ['Working Capital A/C', 'Payment Account', 'Use for auto debit'] },
-                    ]
-                },
-                {
-                    id: 'kmp-2',
-                    title: 'Key Managerial Personnel – 2',
-                    fields: [
-                        { id: 'k2-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-dg', label: 'Designation', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k2-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k2-din', label: 'DIN / DPIN', value: '', type: 'text', boxCount: 8 },
-                        { id: 'k2-fan', label: 'Father’s Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k2-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k2-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-dob', label: 'Date of Birth', value: '', type: 'date' },
-                        { id: 'k2-ad', label: 'Address', value: '', type: 'text' },
-                        { id: 'k2-pc', label: 'Pin Code', value: '', type: 'text', boxCount: 6 },
-                        { id: 'k2-cy', label: 'City', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-st', label: 'State', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k2-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'k2-pt', label: 'Personnel Type', value: '', type: 'checkbox', options: ['Senior Management', 'Banker', 'Authorised Signatory', 'Platform User', 'Beneficial Owner'] },
-                        { id: 'k2-pst', label: 'Personnel Sub-type', value: '', type: 'checkbox', options: ['Proprietor', 'Manager', 'Partner', 'Director', 'Other'] },
-                        { id: 'k2-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Checker', 'Viewer', 'Both', 'None'] },
-                        { id: 'k2-am', label: 'Authorisation Method', value: '', type: 'checkbox', options: ['Board Resolution', 'Power of Attorney', 'Letter of Authorisation', 'Other'] },
-                        { id: 'k2-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
-                    id: 'kmp-3',
-                    title: 'Key Managerial Personnel – 3',
-                    fields: [
-                        { id: 'k3-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-dg', label: 'Designation', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k3-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k3-din', label: 'DIN / DPIN', value: '', type: 'text', boxCount: 8 },
-                        { id: 'k3-fan', label: 'Father’s Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k3-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k3-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-dob', label: 'Date of Birth', value: '', type: 'date' },
-                        { id: 'k3-ad', label: 'Address', value: '', type: 'text' },
-                        { id: 'k3-pc', label: 'Pin Code', value: '', type: 'text', boxCount: 6 },
-                        { id: 'k3-cy', label: 'City', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-st', label: 'State', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k3-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'k3-pt', label: 'Personnel Type', value: '', type: 'checkbox', options: ['Senior Management', 'Banker', 'Authorised Signatory', 'Platform User', 'Beneficial Owner'] },
-                        { id: 'k3-pst', label: 'Personnel Sub-type', value: '', type: 'checkbox', options: ['Proprietor', 'Manager', 'Partner', 'Director', 'Other'] },
-                        { id: 'k3-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Checker', 'Viewer', 'Both', 'None'] },
-                        { id: 'k3-am', label: 'Authorisation Method', value: '', type: 'checkbox', options: ['Board Resolution', 'Power of Attorney', 'Letter of Authorisation', 'Other'] },
-                        { id: 'k3-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
-                    id: 'platform-user-2',
-                    title: 'Platform User – 2',
-                    fields: [
-                        { id: 'p2-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p2-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p2-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'p2-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'p2-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'p2-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'p2-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p2-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p2-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Viewer', 'Checker', 'Both', 'None'] },
-                        { id: 'p2-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
-                    id: 'kmp-4',
-                    title: 'Key Managerial Personnel – 4',
-                    fields: [
-                        { id: 'k4-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-dg', label: 'Designation', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k4-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k4-din', label: 'DIN / DPIN', value: '', type: 'text', boxCount: 8 },
-                        { id: 'k4-fan', label: 'Father’s Name', value: '', type: 'text', boxCount: 25 },
-                        { id: 'k4-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'k4-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-dob', label: 'Date of Birth', value: '', type: 'date' },
-                        { id: 'k4-ad', label: 'Address', value: '', type: 'text' },
-                        { id: 'k4-pc', label: 'Pin Code', value: '', type: 'text', boxCount: 6 },
-                        { id: 'k4-cy', label: 'City', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-st', label: 'State', value: '', type: 'text', boxCount: 15 },
-                        { id: 'k4-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'k4-pt', label: 'Personnel Type', value: '', type: 'checkbox', options: ['Senior Management', 'Banker', 'Authorised Signatory', 'Platform User', 'Beneficial Owner'] },
-                        { id: 'k4-pst', label: 'Personnel Sub-type', value: '', type: 'checkbox', options: ['Proprietor', 'Manager', 'Partner', 'Director', 'Other'] },
-                        { id: 'k4-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Checker', 'Viewer', 'Both', 'None'] },
-                        { id: 'k4-am', label: 'Authorisation Method', value: '', type: 'checkbox', options: ['Board Resolution', 'Power of Attorney', 'Letter of Authorisation', 'Other'] },
-                        { id: 'k4-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
-                    id: 'platform-user-3',
-                    title: 'Platform User – 3',
-                    fields: [
-                        { id: 'p3-fn', label: 'First Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p3-ln', label: 'Last Name', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p3-mn', label: 'Mobile Number', value: '', type: 'text', boxCount: 10 },
-                        { id: 'p3-ei', label: 'Email ID', value: '', type: 'text', boxCount: 25 },
-                        { id: 'p3-kn', label: 'KIN / CKYC Number', value: '', type: 'text', boxCount: 14 },
-                        { id: 'p3-pan', label: 'PAN', value: '', type: 'text', boxCount: 10 },
-                        { id: 'p3-apt', label: 'Address Proof Type', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p3-apn', label: 'Address Proof Number', value: '', type: 'text', boxCount: 15 },
-                        { id: 'p3-pa', label: 'Platform Access', value: '', type: 'checkbox', options: ['Maker', 'Viewer', 'Checker', 'Both', 'None'] },
-                        { id: 'p3-sign', label: 'Photo & Signature', value: '', type: 'signature', showPhoto: true, showSignature: true },
-                    ]
-                },
-                {
                     id: 'declaration',
                     title: 'Declaration',
                     fields: [
@@ -257,8 +101,27 @@ export function FormBuilder() {
                     ]
                 }
             ]
+        }],
+        // Initial Header
+        {
+            logoText: 'DTX',
+            logoHighlight: 'X',
+            subHeader: ['DOMESTIC', 'TRADE', 'EXCHANGE'],
+            companyName: 'KredX Platform Private Limited',
+            formTitle: 'Application Form',
+            disclaimer: 'All fields are mandatory. If a field is not applicable, please write "NA" — do not leave any fields blank.'
         }
-    ]);
+    );
+
+    const setPages = (value: Page[] | ((prev: Page[]) => Page[])) => {
+        const newPages = typeof value === 'function' ? value(pages) : value;
+        pushState(newPages, headerConfig);
+    };
+
+    const setHeaderConfig = (value: HeaderConfig | ((prev: HeaderConfig) => HeaderConfig)) => {
+        const newHeader = typeof value === 'function' ? value(headerConfig) : value;
+        pushState(pages, newHeader);
+    };
 
     const componentRef = useRef<HTMLDivElement>(null);
 
@@ -266,6 +129,22 @@ export function FormBuilder() {
         contentRef: componentRef,
         documentTitle: 'Fintech_Form_Application',
     });
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    redo();
+                } else {
+                    undo();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [undo, redo]);
 
     const updateHeader = (updates: Partial<HeaderConfig>) => {
         setHeaderConfig(prev => ({ ...prev, ...updates }));
@@ -419,35 +298,74 @@ export function FormBuilder() {
                 <div style={{ paddingBottom: '2rem' }}></div>
             </aside>
             <main className={styles.main}>
-                <div className={styles.toolbar}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <button
-                            onClick={() => handlePrint && handlePrint()}
-                            className={styles.printButton}
-                        >
-                            <Printer size={18} /> Print / Export PDF
-                        </button>
+                {/* Header with Background */}
+                <div className={styles.header}>
+                    <div className={styles.headerContent}>
+                        <div className={styles.headerLeft}>
+                            <h1 className={styles.headerTitle}>Form Editor</h1>
+                            <p className={styles.headerSubtitle}>
+                                {headerConfig.formTitle || 'Untitled Form'}
+                            </p>
+                        </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
-                            <label>Paper Color:</label>
-                            <input
-                                type="color"
-                                value={backgroundColor}
-                                onChange={(e) => setBackgroundColor(e.target.value)}
-                                style={{ border: 'none', background: 'none', cursor: 'pointer', width: '30px', height: '30px' }}
+                        <div className={styles.headerRight}>
+                            <div className={styles.undoRedoGroup}>
+                                <button
+                                    onClick={undo}
+                                    disabled={!canUndo}
+                                    className={styles.iconButton}
+                                    title="Undo"
+                                >
+                                    <Undo size={18} />
+                                </button>
+                                <button
+                                    onClick={redo}
+                                    disabled={!canRedo}
+                                    className={styles.iconButton}
+                                    title="Redo"
+                                >
+                                    <Redo size={18} />
+                                </button>
+                            </div>
+
+                            <div className={styles.colorPickerGroup}>
+                                <label className={styles.colorLabel}>Background</label>
+                                <input
+                                    type="color"
+                                    value={backgroundColor}
+                                    onChange={(e) => setBackgroundColor(e.target.value)}
+                                    className={styles.colorPicker}
+                                />
+                            </div>
+
+                            <button
+                                onClick={() => handlePrint && handlePrint()}
+                                className={styles.secondaryButton}
+                            >
+                                <Printer size={18} />
+                                Export PDF
+                            </button>
+
+                            <PublishButton
+                                pages={pages}
+                                headerConfig={headerConfig}
+                                backgroundColor={backgroundColor}
                             />
                         </div>
                     </div>
                 </div>
-                {/* Note: Preview now renders pages internally inside documentContainer */}
-                <Preview
-                    pages={pages}
-                    headerConfig={headerConfig}
-                    onUpdateField={updateField}
-                    onUpdateHeader={updateHeader}
-                    ref={componentRef}
-                    backgroundColor={backgroundColor}
-                />
+
+                {/* Preview Area */}
+                <div className={styles.previewArea}>
+                    <Preview
+                        pages={pages}
+                        headerConfig={headerConfig}
+                        onUpdateField={updateField}
+                        onUpdateHeader={updateHeader}
+                        ref={componentRef}
+                        backgroundColor={backgroundColor}
+                    />
+                </div>
             </main>
         </div>
     );

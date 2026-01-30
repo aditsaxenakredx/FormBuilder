@@ -10,6 +10,7 @@ interface PreviewProps {
     onUpdateHeader: (updates: Partial<HeaderConfig>) => void;
     ref?: React.Ref<HTMLDivElement>;
     backgroundColor?: string;
+    readOnlyFieldIds?: Set<string>;
 }
 
 // Heuristics for A4 Layout
@@ -23,7 +24,7 @@ const SECTION_TITLE_HEIGHT = 80;
 const FIELD_HEIGHT = 60;
 
 // Helper component for Boxed Input logic
-const BoxedField = ({ field, onUpdate }: { field: FormField, onUpdate: (updates: Partial<FormField>) => void }) => {
+const BoxedField = ({ field, onUpdate, disabled }: { field: FormField, onUpdate: (updates: Partial<FormField>) => void, disabled?: boolean }) => {
     // We need to manage focus manually because React re-renders might lose it
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
         if (e.key === 'Backspace' && !e.currentTarget.value) {
@@ -86,13 +87,15 @@ const BoxedField = ({ field, onUpdate }: { field: FormField, onUpdate: (updates:
                     onChange={(e) => handleChange(e, bi)}
                     onKeyDown={(e) => handleKeyDown(e, bi)}
                     autoComplete="off"
+                    disabled={disabled}
+                    style={disabled ? { backgroundColor: '#f3f4f6', cursor: 'not-allowed' } : {}}
                 />
             ))}
         </div>
     );
 };
 
-export const Preview = React.forwardRef<HTMLDivElement, PreviewProps>(({ pages, headerConfig, onUpdateField, onUpdateHeader, backgroundColor }, ref) => {
+export const Preview = React.forwardRef<HTMLDivElement, PreviewProps>(({ pages, headerConfig, onUpdateField, onUpdateHeader, backgroundColor, readOnlyFieldIds }, ref) => {
     interface PartialSection {
         id: string;
         title: string;
@@ -297,93 +300,106 @@ export const Preview = React.forwardRef<HTMLDivElement, PreviewProps>(({ pages, 
                                     )}
 
                                     <div className={styles.grid}>
-                                        {section.fields.map(field => (
-                                            <div key={field.id} className={styles.fieldContainer}>
-                                                {field.type !== 'signature' && (
-                                                    <div className={styles.labelContainer}>
-                                                        <label className={styles.label}>{field.label} :</label>
-                                                        {field.helpText && (
-                                                            <span className={styles.helpText}>{field.helpText}</span>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {['text', 'number', 'date'].includes(field.type) ? (
-                                                    field.boxCount ? (
-                                                        <BoxedField field={field} onUpdate={(u) => handleFieldUpdate(field.id, u)} />
-                                                    ) : (
-                                                        <input
-                                                            className={styles.inputLineEditable}
-                                                            value={field.value}
-                                                            onChange={(e) => handleFieldUpdate(field.id, { value: e.target.value })}
-                                                        />
-                                                    )
-                                                ) : field.type === 'checkbox' ? (
-                                                    <div className="flex flex-col gap-2 w-full">
-                                                        {field.options && field.options.length > 0 ? (
-                                                            <div className={styles.checkboxGrid}>
-                                                                {field.options.map((opt, optIndex) => {
-                                                                    const isSelected = (field.value || '').split(',').includes(opt);
-                                                                    return (
-                                                                        <div key={optIndex} className={styles.checkboxItem}
-                                                                            onClick={() => {
-                                                                                const current = (field.value || '').split(',').filter(Boolean);
-                                                                                let newVals;
-                                                                                if (current.includes(opt)) {
-                                                                                    newVals = current.filter(v => v !== opt);
-                                                                                } else {
-                                                                                    newVals = [...current, opt];
-                                                                                }
-                                                                                handleFieldUpdate(field.id, { value: newVals.join(',') });
-                                                                            }}
-                                                                        >
-                                                                            <div className={styles.checkbox}>
-                                                                                {isSelected && <Check size={16} strokeWidth={3} />}
-                                                                            </div>
-                                                                            <span style={{ fontSize: '0.85rem', lineHeight: '1.2' }}>{opt}</span>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        ) : (
-                                                            <div
-                                                                className={styles.checkbox}
-                                                                onClick={() => handleFieldUpdate(field.id, { checked: !field.checked })}
-                                                            >
-                                                                {field.checked && <Check size={16} strokeWidth={3} />}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : field.type === 'signature' ? (
-                                                    <div className="w-full py-4">
-                                                        <div className={styles.signatureRow}>
-                                                            {field.showPhoto && (
-                                                                <div className={styles.photoBox}
-                                                                    style={{ width: '40mm', height: '50mm' }}>
-                                                                    <div className={styles.photoInstruction}>
-                                                                        <div>Please paste</div>
-                                                                        <div>latest passport</div>
-                                                                        <div>size photo.</div>
-                                                                        <div className="mt-6">Photo to be</div>
-                                                                        <div>signed accross</div>
-                                                                    </div>
-                                                                </div>
+                                        {section.fields.map(field => {
+                                            const isReadOnly = readOnlyFieldIds?.has(field.id);
+                                            return (
+                                                <div key={field.id} className={styles.fieldContainer}>
+                                                    {field.type !== 'signature' && (
+                                                        <div className={styles.labelContainer}>
+                                                            <label className={styles.label}>{field.label} :</label>
+                                                            {field.helpText && (
+                                                                <span className={styles.helpText}>{field.helpText}</span>
                                                             )}
-                                                            {field.showSignature && (
-                                                                <div className="flex-1">
-                                                                    <div className={styles.signatureBox}
-                                                                        style={{ width: '100%', maxWidth: '7cm', height: '2.5cm' }}>
-                                                                        <span className={styles.signatureWatermark}>
-                                                                            {field.label}
-                                                                        </span>
-                                                                    </div>
+                                                        </div>
+                                                    )}
+
+                                                    {['text', 'number', 'date'].includes(field.type) ? (
+                                                        field.boxCount ? (
+                                                            <BoxedField
+                                                                field={field}
+                                                                onUpdate={(u) => handleFieldUpdate(field.id, u)}
+                                                                disabled={readOnlyFieldIds?.has(field.id)}
+                                                            />
+                                                        ) : (
+                                                            <input
+                                                                className={styles.inputLineEditable}
+                                                                value={field.value}
+                                                                onChange={(e) => handleFieldUpdate(field.id, { value: e.target.value })}
+                                                                disabled={readOnlyFieldIds?.has(field.id)}
+                                                            />
+                                                        )
+                                                    ) : field.type === 'checkbox' ? (
+                                                        <div className="flex flex-col gap-2 w-full">
+                                                            {field.options && field.options.length > 0 ? (
+                                                                <div className={styles.checkboxGrid}>
+                                                                    {field.options.map((opt, optIndex) => {
+                                                                        const isSelected = (field.value || '').split(',').includes(opt);
+                                                                        return (
+                                                                            <div key={optIndex} className={styles.checkboxItem}
+                                                                                onClick={() => {
+                                                                                    if (readOnlyFieldIds?.has(field.id)) return;
+                                                                                    const current = (field.value || '').split(',').filter(Boolean);
+                                                                                    let newVals;
+                                                                                    if (current.includes(opt)) {
+                                                                                        newVals = current.filter(v => v !== opt);
+                                                                                    } else {
+                                                                                        newVals = [...current, opt];
+                                                                                    }
+                                                                                    handleFieldUpdate(field.id, { value: newVals.join(',') });
+                                                                                }}
+                                                                            >
+                                                                                <div className={styles.checkbox}>
+                                                                                    {isSelected && <Check size={16} strokeWidth={3} />}
+                                                                                </div>
+                                                                                <span style={{ fontSize: '0.85rem', lineHeight: '1.2' }}>{opt}</span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className={styles.checkbox}
+                                                                    onClick={() => {
+                                                                        if (!readOnlyFieldIds?.has(field.id)) {
+                                                                            handleFieldUpdate(field.id, { checked: !field.checked });
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {field.checked && <Check size={16} strokeWidth={3} />}
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                ) : null}
-                                            </div>
-                                        ))}
+                                                    ) : field.type === 'signature' ? (
+                                                        <div className="w-full py-4">
+                                                            <div className={styles.signatureRow}>
+                                                                {field.showPhoto && (
+                                                                    <div className={styles.photoBox}
+                                                                        style={{ width: '40mm', height: '50mm' }}>
+                                                                        <div className={styles.photoInstruction}>
+                                                                            <div>Please paste</div>
+                                                                            <div>latest passport</div>
+                                                                            <div>size photo.</div>
+                                                                            <div className="mt-6">Photo to be</div>
+                                                                            <div>signed accross</div>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                {field.showSignature && (
+                                                                    <div className="flex-1">
+                                                                        <div className={styles.signatureBox}
+                                                                            style={{ width: '100%', maxWidth: '7cm', height: '2.5cm' }}>
+                                                                            <span className={styles.signatureWatermark}>
+                                                                                {field.label}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );

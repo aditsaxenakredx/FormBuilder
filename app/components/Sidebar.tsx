@@ -62,7 +62,7 @@ const SortableFieldItem = ({ field, sectionId, pageId, onUpdateField, onRemoveFi
                     {field.helpText === undefined ? (
                         <button
                             type="button"
-                            className="text-[10px] items-center gap-1 font-semibold text-slate-500 hover:text-accent flex bg-slate-100/50 hover:bg-accent/5 px-2 py-1 rounded transition-all italic border border-transparent hover:border-accent/20"
+                            className={styles.helpTextButton}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onUpdateField(pageId, sectionId, field.id, { helpText: '' });
@@ -83,7 +83,7 @@ const SortableFieldItem = ({ field, sectionId, pageId, onUpdateField, onRemoveFi
                                 />
                                 <button
                                     type="button"
-                                    className="text-slate-400 hover:text-red-500 p-1 bg-slate-100 hover:bg-red-50 rounded"
+                                    className={styles.removeHelpTextButton}
                                     onClick={() => onUpdateField(pageId, sectionId, field.id, { helpText: undefined })}
                                     title="Remove help text"
                                     onPointerDown={(e) => e.stopPropagation()}
@@ -112,17 +112,17 @@ const SortableFieldItem = ({ field, sectionId, pageId, onUpdateField, onRemoveFi
                         <label className="text-xs text-secondary font-medium block mb-1">Options:</label>
 
                         {/* List of current options as tags */}
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className={styles.flexRow} style={{ flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                             {(field.options || []).map((opt: string, idx: number) => (
-                                <div key={idx} className="bg-slate-100 flex items-center gap-1 px-2 py-1 rounded border border-slate-200">
-                                    <span className="text-xs text-slate-700">{opt}</span>
+                                <div key={idx} className={styles.optionTag}>
+                                    <span className={styles.optionTagText}>{opt}</span>
                                     <button
                                         onClick={() => {
                                             const newOpts = [...(field.options || [])];
                                             newOpts.splice(idx, 1);
                                             onUpdateField(pageId, sectionId, field.id, { options: newOpts });
                                         }}
-                                        className="text-slate-400 hover:text-red-500"
+                                        className={styles.optionTagRemove}
                                         title="Remove Option"
                                         onPointerDown={(e) => e.stopPropagation()}
                                     >
@@ -149,7 +149,7 @@ const SortableFieldItem = ({ field, sectionId, pageId, onUpdateField, onRemoveFi
                                 onPointerDown={(e) => e.stopPropagation()}
                             />
                             <button
-                                className="p-1 bg-accent/10 text-accent rounded hover:bg-accent/20"
+                                className={styles.addOptionButton}
                                 onClick={handleAddOption}
                                 title="Add Option"
                                 onPointerDown={(e) => e.stopPropagation()}
@@ -242,7 +242,7 @@ const SortableSectionItem = ({ section, pageId, onUpdateSection, onUpdateField, 
                     className={styles.sectionTitleInput}
                     onPointerDown={(e) => e.stopPropagation()}
                 />
-                <button onClick={() => onRemoveSection(pageId, section.id)} className="text-red-400 hover:text-red-600 ml-auto p-1">
+                <button onClick={() => onRemoveSection(pageId, section.id)} className={styles.deleteButton} style={{ marginLeft: 'auto' }}>
                     <Trash2 size={14} />
                 </button>
             </div>
@@ -271,14 +271,14 @@ const SortableSectionItem = ({ section, pageId, onUpdateSection, onUpdateField, 
                         </button>
 
                         {showAddMenu && (
-                            <div className="absolute top-10 left-0 bg-white shadow-xl rounded-lg border border-slate-200 z-50 w-48 p-2 flex flex-col gap-1">
-                                <button className="flex items-center gap-2 p-2 hover:bg-slate-50 text-xs text-left rounded" onClick={() => handleAddField('text')}>
+                            <div className={styles.fieldTypeMenu}>
+                                <button className={styles.fieldTypeMenuItem} onClick={() => handleAddField('text')}>
                                     <Type size={14} /> Text Input
                                 </button>
-                                <button className="flex items-center gap-2 p-2 hover:bg-slate-50 text-xs text-left rounded" onClick={() => handleAddField('checkbox')}>
+                                <button className={styles.fieldTypeMenuItem} onClick={() => handleAddField('checkbox')}>
                                     <Square size={14} /> Checkbox
                                 </button>
-                                <button className="flex items-center gap-2 p-2 hover:bg-slate-50 text-xs text-left rounded" onClick={() => handleAddField('signature')}>
+                                <button className={styles.fieldTypeMenuItem} onClick={() => handleAddField('signature')}>
                                     <PenTool size={14} /> Signature / Photo
                                 </button>
                             </div>
@@ -356,7 +356,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="mb-6 border-b border-slate-200 pb-4">
                 <button
                     onClick={() => setHeaderExpanded(!headerExpanded)}
-                    className="flex items-center gap-2 w-full text-left text-sm font-semibold text-slate-700 mb-2 px-3 py-2 hover:bg-slate-50 rounded transition-colors"
+                    className={styles.settingsButton}
                 >
                     {headerExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     <Settings size={16} /> Form Settings
@@ -414,10 +414,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 {pages.map((page, pageIndex) => (
                     <div key={page.id} className="mb-8 border-b-4 border-slate-100 pb-4">
-                        <div className="flex items-center gap-2 mb-4 font-bold text-sm uppercase text-muted tracking-wider px-1 justify-between bg-slate-50 p-2 rounded">
-                            <span className="flex items-center gap-2"><FileText size={14} /> Page {pageIndex + 1}</span>
+                        <div className={styles.pageHeader}>
+                            <span className={styles.pageHeaderLabel}><FileText size={14} /> Page {pageIndex + 1}</span>
                             {pages.length > 1 && (
-                                <button onClick={() => onRemovePage(page.id)} title="Delete Page" className="text-red-400 hover:text-red-600">
+                                <button onClick={() => onRemovePage(page.id)} title="Delete Page" className={styles.deleteButton}>
                                     <Trash2 size={14} />
                                 </button>
                             )}
